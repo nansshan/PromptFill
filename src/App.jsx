@@ -586,7 +586,7 @@ const MobileAnimatedSlogan = React.memo(({ isActive, language, isDarkMode }) => 
 
 const App = () => {
   // 当前应用代码版本 (必须与 package.json 和 version.json 一致)
-  const APP_VERSION = "0.5.1";
+  const APP_VERSION = "0.6.0";
 
   // 临时功能：瀑布流样式管理
   const [masonryStyleKey, setMasonryStyleKey] = useState('poster');
