@@ -234,35 +234,6 @@ const App = () => {
     }
   }, [activeTemplateId, isEditing, language]);
 
-  // 动态更新 SEO 标题和描述
-  useEffect(() => {
-    if (activeTemplate) {
-      const templateName = getLocalized(activeTemplate.name, language);
-      const siteTitle = "Prompt Fill | 提示词填空器";
-      document.title = `${templateName} - ${siteTitle}`;
-      
-      // 动态更新 meta description
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) {
-        const content = typeof activeTemplate.content === 'string' 
-          ? activeTemplate.content 
-          : (activeTemplate.content?.cn || activeTemplate.content?.en || "");
-        const descriptionText = content.slice(0, 150).replace(/[#*`]/g, '').replace(/\s+/g, ' ');
-        metaDescription.setAttribute("content", `${templateName}: ${descriptionText}...`);
-      }
-    }
-  }, [activeTemplate, language]);
-
-  // Cursor State for Grouping（将由 useLinkageGroups Hook 管理）
-
-  const popoverRef = useRef(null);
-  const textareaRef = useRef(null);
-  const sidebarRef = useRef(null);
-  const posterScrollRef = useRef(null);
-  
-  // Poster Mode Auto Scroll State
-  const [isPosterAutoScrollPaused, setIsPosterAutoScrollPaused] = useState(false);
-
   // Helper: Translate
   const t = (key, params = {}) => {
     let str = TRANSLATIONS[language][key] || key;
@@ -271,6 +242,34 @@ const App = () => {
     });
     return str;
   };
+
+  // 动态更新 SEO 标题和描述
+  useEffect(() => {
+    if (activeTemplate && typeof window !== 'undefined') {
+      try {
+        const templateName = getLocalized(activeTemplate.name, language);
+        if (templateName) {
+          const siteTitle = "Prompt Fill | 提示词填空器";
+          document.title = `${templateName} - ${siteTitle}`;
+          
+          // 动态更新 meta description
+          const metaDescription = document.querySelector('meta[name="description"]');
+          if (metaDescription) {
+            const content = typeof activeTemplate.content === 'object' 
+              ? (activeTemplate.content[language] || activeTemplate.content.cn || activeTemplate.content.en || "")
+              : (activeTemplate.content || "");
+            
+            if (content) {
+              const descriptionText = content.slice(0, 150).replace(/[#*`]/g, '').replace(/\s+/g, ' ');
+              metaDescription.setAttribute("content", `${templateName}: ${descriptionText}...`);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("SEO update error:", e);
+      }
+    }
+  }, [activeTemplate, language]);
 
   const displayTag = React.useCallback((tag) => {
     return TAG_LABELS[language]?.[tag] || tag;
