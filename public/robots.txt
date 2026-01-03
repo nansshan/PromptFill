@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://aipromptfill.com/sitemap.xml
+Sitemap: https://www.aipromptfill.com/sitemap.xml
