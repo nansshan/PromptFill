@@ -37,7 +37,8 @@ export const DiscoveryView = React.memo(({
     globalContainerStyle,
     masonryStyleKey,
     themeMode,
-    setThemeMode
+    setThemeMode,
+    templates
   }) => {
     const [columnCount, setColumnCount] = useState(1);
     const [columnGap, setColumnGap] = useState(20); // Default to gap-5 (20px)
@@ -76,9 +77,8 @@ export const DiscoveryView = React.memo(({
   if (isMobile) {
     // ... 保持移动端逻辑不变
     return (
-      <div 
-        className={`fixed inset-0 z-10 flex flex-col overflow-y-auto pb-32 md:pb-20 ${isDarkMode ? '' : 'mesh-gradient-bg'}`}
-        style={isDarkMode ? { background: 'linear-gradient(180deg, #323131 0%, #181716 100%)' } : {}}
+      <div
+        className={`fixed inset-0 z-10 flex flex-col overflow-y-auto pb-32 md:pb-20 ${isDarkMode ? 'dark-gradient-bg' : 'mesh-gradient-bg'}`}
       >
         <div className="flex flex-col w-full min-h-full px-5 py-8 gap-6">
           {/* 1. 顶部 SVG 标题区域 */}
