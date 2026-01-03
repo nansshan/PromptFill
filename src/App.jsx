@@ -55,6 +55,9 @@ const App = () => {
   const [templates, setTemplates] = useStickyState(INITIAL_TEMPLATES_CONFIG, "app_templates_v10");
   const [activeTemplateId, setActiveTemplateId] = useStickyState("tpl_default", "app_active_template_id_v4");
   
+  // Derived State: Current Active Template (必须在其它 hooks 和 effects 之前计算，避免 TDZ 错误)
+  const activeTemplate = templates.find(t => t.id === activeTemplateId) || templates[0];
+  
   const [lastAppliedDataVersion, setLastAppliedDataVersion] = useStickyState("", "app_data_version_v1");
   const [themeMode, setThemeMode] = useStickyState("system", "app_theme_mode_v1");
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -243,34 +246,6 @@ const App = () => {
     return str;
   };
 
-  // 动态更新 SEO 标题和描述
-  useEffect(() => {
-    if (activeTemplate && typeof window !== 'undefined') {
-      try {
-        const templateName = getLocalized(activeTemplate.name, language);
-        if (templateName) {
-          const siteTitle = "Prompt Fill | 提示词填空器";
-          document.title = `${templateName} - ${siteTitle}`;
-          
-          // 动态更新 meta description
-          const metaDescription = document.querySelector('meta[name="description"]');
-          if (metaDescription) {
-            const content = typeof activeTemplate.content === 'object' 
-              ? (activeTemplate.content[language] || activeTemplate.content.cn || activeTemplate.content.en || "")
-              : (activeTemplate.content || "");
-            
-            if (content) {
-              const descriptionText = content.slice(0, 150).replace(/[#*`]/g, '').replace(/\s+/g, ' ');
-              metaDescription.setAttribute("content", `${templateName}: ${descriptionText}...`);
-            }
-          }
-        }
-      } catch (e) {
-        console.error("SEO update error:", e);
-      }
-    }
-  }, [activeTemplate, language]);
-
   const displayTag = React.useCallback((tag) => {
     return TAG_LABELS[language]?.[tag] || tag;
   }, [language]);
@@ -423,9 +398,6 @@ const App = () => {
     }));
   }, [setBanks]);
 
-  // Derived State: Current Active Template (必须在 hooks 之前计算)
-  const activeTemplate = templates.find(t => t.id === activeTemplateId) || templates[0];
-
   // 新增：静默预缓存当前模板图片，提升导出体验
   useEffect(() => {
     if (!activeTemplate || !activeTemplate.imageUrl || !activeTemplate.imageUrl.startsWith('http')) return;
@@ -454,6 +426,34 @@ const App = () => {
     const timer = setTimeout(preCache, 2000);
     return () => clearTimeout(timer);
   }, [activeTemplate?.imageUrl]);
+
+  // 动态更新 SEO 标题和描述
+  useEffect(() => {
+    if (activeTemplate && typeof window !== 'undefined') {
+      try {
+        const templateName = getLocalized(activeTemplate.name, language);
+        if (templateName) {
+          const siteTitle = "Prompt Fill | 提示词填空器";
+          document.title = `${templateName} - ${siteTitle}`;
+          
+          // 动态更新 meta description
+          const metaDescription = document.querySelector('meta[name="description"]');
+          if (metaDescription) {
+            const content = typeof activeTemplate.content === 'object' 
+              ? (activeTemplate.content[language] || activeTemplate.content.cn || activeTemplate.content.en || "")
+              : (activeTemplate.content || "");
+            
+            if (content) {
+              const descriptionText = content.slice(0, 150).replace(/[#*`]/g, '').replace(/\s+/g, ' ');
+              metaDescription.setAttribute("content", `${templateName}: ${descriptionText}...`);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("SEO update error:", e);
+      }
+    }
+  }, [activeTemplate, language]);
 
   const handleDeleteOption = React.useCallback((key, optionToDelete) => {
     setBanks(prev => ({
